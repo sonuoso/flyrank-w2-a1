@@ -1,8 +1,11 @@
 const express = require("express");
-
 const app = express();
 
+const swaggerUi = require("swagger-ui-express");
+const openApiSpec = require("./openapi.json");
+
 app.use(express.json());
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 let tasks = [
   { id: 1, title: "Check dry good par levels", done: true },

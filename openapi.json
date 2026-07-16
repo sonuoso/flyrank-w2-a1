@@ -1,0 +1,292 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "FlyRank W2-A1",
+    "description": "A simple CRUD Express app to test out GET, POST, PUT and DELETE API methods with custom routes.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Local server" }
+  ],
+  "components": {
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Assigned numerical id of the task"
+          },
+          "title": {
+            "type": "string",
+            "description": "Name of the task"
+          },
+          "done": {
+            "type": "boolean",
+            "description": "Status of the completion of the task. Either true for completed or false for not completed."
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Returns server's running status",
+        "responses": {
+          "200": {
+            "description": "A JSON object with 'status' as key and 'ok' as value",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "summary": "Returns the list of stored tasks",
+        "responses": {
+          "200": {
+            "description": "A list of JSON objects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Task" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Receives a task to save in the tasks array",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "An action required to complete as a task"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "A JSON object containing the information of the newly created task",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "400": {
+            "description": "A JSON object containing the error message related to the provided title in the request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "missingTitle": {
+                    "summary": "Title is not provided in the request",
+                    "value": { "error": "Title is missing" }
+                  },
+                  "emptyTitle": {
+                    "summary": "Title received as an empty value",
+                    "value": { "error": "Title is empty" }
+                  },
+                  "invalidTitle": {
+                    "summary": "Title received as an unexpected type or value",
+                    "value": { "error": "Title is invalid" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "summary": "Returns a single task matching the provided id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON object containing the required task's information",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "404": {
+            "description": "A JSON object returning the error for not finding the task for the provided id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Task {id} is not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Receive a new title and/or done value to replace on the task for the provided id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "New title text to replace the current title"
+                  },
+                  "done": {
+                    "type": "boolean",
+                    "description": "Status of the completion of the task. Completed - true, Non completed - false."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A JSON object of the modified task",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Task" }
+              }
+            }
+          },
+          "400": {
+            "description": "A JSON object indicating relevant error message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidDone": {
+                    "summary": "Done value received is not boolean",
+                    "value": { "error": "Invalid done value" }
+                  },
+                  "invalidBody": {
+                    "summary": "Request body has no valid value",
+                    "value": { "error": "Invalid body" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A JSON object returning the error for not finding the task for the provided id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Task {id} is not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete the task matching the provided id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Returns no content when the task with the matching id has been deleted."
+          },
+          "404": {
+            "description": "A JSON object returning the error for not finding the task for the provided id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Task {id} is not found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
