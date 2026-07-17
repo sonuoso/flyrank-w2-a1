@@ -6,7 +6,7 @@ A simple CRUD application built with Express. It consists of GET, POST, PUT and 
 - Reads all tasks from the list
 - Reads a single task for the provided Id
 - Updates task information for a provided Id
-- Deleted task matching the provided Id
+- Deletes task matching the provided Id
 
 ## Tech Stack
 - JavaScript, Express.js, SwaggerUI

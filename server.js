@@ -22,7 +22,18 @@ app.get("/health", (req, res) => {
 });
 
 app.get("/tasks", (req, res) => {
-  res.json(tasks);
+  const done = req.query.done;
+
+  if (done !== undefined) {
+    if (done === "true" || done === "false") {
+      const tasksWithDone = tasks.filter((task) => task.done.toString() === done);
+      res.json(tasksWithDone);
+    } else {
+      res.status(400).json({ error: "Invalid done value" });
+    }
+  } else {
+    res.json(tasks);
+  }
 });
 
 app.get("/tasks/:id", (req, res) => {
