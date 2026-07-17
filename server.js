@@ -39,6 +39,13 @@ app.get("/tasks", (req, res) => {
   res.json(filteredTasks);
 });
 
+app.get("/stats", (req, res) => {
+  const total = tasks.length;
+  const done = tasks.filter((task) => task.done === true).length;
+
+  res.json({ total, done, open: total - done });
+});
+
 app.get("/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
 
