@@ -73,6 +73,16 @@ app.post("/tasks", (req, res) => {
   }
 });
 
+app.post("/reset", (req, res) => {
+  tasks = [
+    { id: 1, title: "Check dry good par levels", done: true },
+    { id: 2, title: "Inspect fresh food stock", done: true },
+    { id: 3, title: "Order fresh produce", done: false },
+  ];
+
+  res.json(tasks);
+});
+
 app.put("/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
   const updatedTask = tasks.find((task) => task.id === id);
