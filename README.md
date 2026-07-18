@@ -65,3 +65,6 @@ Once the server is running, visit `http://localhost:3000/docs`. It will show all
 ![All API routes in SwaggerUI](./SwaggerUI-A.png)
 
 ![Response body of the PUT route in SwaggerUI](./SwaggerUI-B.png)
+
+## The Mortality Experiment
+A new task with `{ title: "Check produce crates" }` created using `POST` returned the new task with the automatically assigned `id = 4` but when the server restarted and called `GET` on all tasks, it only had 3 tasks with the maximum id value being 3. Since tasks are saved to an in-memory array on the running server and upon restart, tasks array is reverted to its default values discarding changes.
