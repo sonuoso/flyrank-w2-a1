@@ -1,0 +1,383 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Task CRUD API",
+    "description": "A simple in-memory CRUD API for managing tasks. Built to demonstrate GET, POST, PUT and DELETE routes with Express.js. Data is stored in a plain JavaScript array and resets whenever the server restarts.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Server status checks"
+    },
+    {
+      "name": "Tasks",
+      "description": "Operations for creating, reading, updating and deleting tasks"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Check server health",
+        "description": "Returns a simple status object confirming the server is running.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Server is running successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "List all tasks",
+        "description": "Returns every task currently stored in the tasks array.",
+        "operationId": "getTasks",
+        "responses": {
+          "200": {
+            "description": "A JSON array of all saved tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                },
+                "example": [
+                  { "id": 1, "title": "Check dry good par levels", "done": true },
+                  { "id": 2, "title": "Inspect fresh food stock", "done": true },
+                  { "id": 3, "title": "Order fresh produce", "done": false }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Tasks"],
+        "summary": "Create a new task",
+        "description": "Creates a task using the next available id and the title provided by the caller. The new task's `done` value always starts as `false`.",
+        "operationId": "createTask",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskRequest"
+              },
+              "example": {
+                "title": "Wipe down prep counters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The task was created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                },
+                "example": {
+                  "id": 4,
+                  "title": "Wipe down prep counters",
+                  "done": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The title was missing, empty, or otherwise invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "titleMissing": {
+                    "summary": "Title not provided",
+                    "value": { "error": "Title is required." }
+                  },
+                  "titleEmpty": {
+                    "summary": "Title is an empty string",
+                    "value": { "error": "Title cannot be empty." }
+                  },
+                  "titleWrongType": {
+                    "summary": "Title is not a string",
+                    "value": { "error": "Title must be a string." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get a task by id",
+        "description": "Returns the task matching the given id.",
+        "operationId": "getTaskById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The task matching the given id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                },
+                "example": {
+                  "id": 3,
+                  "title": "Order fresh produce",
+                  "done": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No task exists with the given id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task with id 99 not found."
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Tasks"],
+        "summary": "Update a task",
+        "description": "Updates the title and/or done status of the task matching the given id. Both fields are optional, but at least one must be provided.",
+        "operationId": "updateTask",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskRequest"
+              },
+              "example": {
+                "title": "Order fresh produce and dairy",
+                "done": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                },
+                "example": {
+                  "id": 3,
+                  "title": "Order fresh produce and dairy",
+                  "done": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body was missing both fields, or `done` was not a boolean.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "noFieldsProvided": {
+                    "summary": "Neither title nor done provided",
+                    "value": { "error": "At least one of title or done must be provided." }
+                  },
+                  "doneInvalidWithTitle": {
+                    "summary": "done is not a boolean, title also provided",
+                    "value": { "error": "Done must be a boolean value when both title and done are provided." }
+                  },
+                  "doneInvalidAlone": {
+                    "summary": "done is not a boolean, title not provided",
+                    "value": { "error": "Done must be a boolean value." }
+                  },
+                  "titleEmpty": {
+                    "summary": "title provided but empty",
+                    "value": { "error": "Title cannot be empty." }
+                  },
+                  "titleWrongType": {
+                    "summary": "title provided but not a string",
+                    "value": { "error": "Title must be a string." }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No task exists with the given id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task with id 99 not found."
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Tasks"],
+        "summary": "Delete a task",
+        "description": "Deletes the task matching the given id.",
+        "operationId": "deleteTask",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TaskId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The task was deleted successfully. No content is returned."
+          },
+          "404": {
+            "description": "No task exists with the given id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "Task with id 99 not found."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "TaskId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "The numeric id of the task.",
+        "schema": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    },
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": ["status"]
+      },
+      "Task": {
+        "type": "object",
+        "description": "A single task.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the task.",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "Short description of the task.",
+            "example": "Check dry good par levels"
+          },
+          "done": {
+            "type": "boolean",
+            "description": "Whether the task has been completed.",
+            "example": false
+          }
+        },
+        "required": ["id", "title", "done"]
+      },
+      "CreateTaskRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title for the new task. Must be a non-empty string.",
+            "example": "Wipe down prep counters"
+          }
+        },
+        "required": ["title"]
+      },
+      "UpdateTaskRequest": {
+        "type": "object",
+        "description": "Fields to update on the task. Both are optional, but at least one must be supplied.",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "New title for the task. Must be a non-empty string if provided.",
+            "example": "Order fresh produce and dairy"
+          },
+          "done": {
+            "type": "boolean",
+            "description": "New completion status for the task.",
+            "example": true
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "Standard error response shape.",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "A message describing what went wrong.",
+            "example": "Task with id 99 not found."
+          }
+        },
+        "required": ["error"]
+      }
+    }
+  }
+}
